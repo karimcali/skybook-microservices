@@ -1,0 +1,70 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: skybook-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  booking-service:
+    build: ./services/booking-service
+    container_name: skybook-booking-service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - rabbitmq
+      - flight-service
+      - payment-service
+  flight-service:
+    build: ./services/flight-service
+    container_name: skybook-flight-service
+    ports:
+      - "5002:5002"
+
+  payment-service:
+    build: ./services/payment-service
+    container_name: skybook-payment-service
+    ports:
+      - "5003:5003"
+
+  ticket-service:
+    build: ./services/ticket-service
+    container_name: skybook-ticket-service
+    ports:
+      - "5004:5004"
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+
+  notification-service:
+    build: ./services/notification-service
+    container_name: skybook-notification-service
+    ports:
+      - "5005:5005"
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+
+  web-ui:
+    build: ./services/web-ui
+    container_name: skybook-web-ui
+    ports:
+      - "8080:5000"
+    depends_on:
+      - booking-service
+      - flight-service
+
+  monitoring-service:
+    build: ./services/monitoring-service
+    container_name: skybook-monitoring-service
+    ports:
+      - "8090:5010"
+    depends_on:
+      - web-ui
+      - booking-service
+      - flight-service
+      - payment-service
+      - ticket-service
+      - notification-service

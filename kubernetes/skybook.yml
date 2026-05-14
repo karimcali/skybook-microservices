@@ -1,0 +1,294 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: skybook
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: skybook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3-management
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: skybook
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flight-service
+  namespace: skybook
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flight-service
+  template:
+    metadata:
+      labels:
+        app: flight-service
+    spec:
+      containers:
+        - name: flight-service
+          image: skybook-flight-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flight-service
+  namespace: skybook
+spec:
+  selector:
+    app: flight-service
+  ports:
+    - port: 5002
+      targetPort: 5002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: skybook
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+        - name: payment-service
+          image: skybook-payment-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5003
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: skybook
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - port: 5003
+      targetPort: 5003
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-service
+  namespace: skybook
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: booking-service
+  template:
+    metadata:
+      labels:
+        app: booking-service
+    spec:
+      containers:
+        - name: booking-service
+          image: skybook-booking-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booking-service
+  namespace: skybook
+spec:
+  selector:
+    app: booking-service
+  ports:
+    - port: 5001
+      targetPort: 5001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-service
+  namespace: skybook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ticket-service
+  template:
+    metadata:
+      labels:
+        app: ticket-service
+    spec:
+      containers:
+        - name: ticket-service
+          image: skybook-ticket-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5004
+          env:
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ticket-service
+  namespace: skybook
+spec:
+  selector:
+    app: ticket-service
+  ports:
+    - port: 5004
+      targetPort: 5004
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: skybook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: skybook-notification-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5005
+          env:
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: skybook
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - port: 5005
+      targetPort: 5005
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-ui
+  namespace: skybook
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-ui
+  template:
+    metadata:
+      labels:
+        app: web-ui
+    spec:
+      containers:
+        - name: web-ui
+          image: skybook-web-ui:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-ui
+  namespace: skybook
+spec:
+  type: NodePort
+  selector:
+    app: web-ui
+  ports:
+    - port: 80
+      targetPort: 5000
+      nodePort: 30080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-service
+  namespace: skybook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring-service
+  template:
+    metadata:
+      labels:
+        app: monitoring-service
+    spec:
+      containers:
+        - name: monitoring-service
+          image: skybook-monitoring-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5010
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-ui
+  namespace: skybook
+spec:
+  type: NodePort
+  selector:
+    app: web-ui
+  ports:
+    - name: browser
+      port: 80
+      targetPort: 5000
+      nodePort: 30080
+    - name: internal
+      port: 5000
+      targetPort: 5000
