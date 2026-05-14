@@ -3,12 +3,13 @@ from uuid import uuid4
 import requests
 import pika
 import json
+import os
 
 app = Flask(__name__)
 
-FLIGHT_SERVICE_URL = "http://flight-service:5002"
-PAYMENT_SERVICE_URL = "http://payment-service:5003"
-RABBITMQ_HOST = "rabbitmq"
+FLIGHT_SERVICE_URL = os.getenv("FLIGHT_SERVICE_URL", "http://flight-service:5002")
+PAYMENT_SERVICE_URL = os.getenv("PAYMENT_SERVICE_URL", "http://payment-service:5003")
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
 
 bookings = {}
 

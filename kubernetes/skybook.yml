@@ -249,9 +249,13 @@ spec:
   selector:
     app: web-ui
   ports:
-    - port: 80
+    - name: browser
+      port: 80
       targetPort: 5000
       nodePort: 30080
+    - name: internal
+      port: 5000
+      targetPort: 5000
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -278,17 +282,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: web-ui
+  name: monitoring-service
   namespace: skybook
 spec:
   type: NodePort
   selector:
-    app: web-ui
+    app: monitoring-service
   ports:
-    - name: browser
-      port: 80
-      targetPort: 5000
-      nodePort: 30080
-    - name: internal
-      port: 5000
-      targetPort: 5000
+    - port: 80
+      targetPort: 5010
+      nodePort: 30090
